@@ -2,9 +2,10 @@
   "name": "nodejs-tutorial",
   "version": "1.0.0",
   "description": "Description NodeJS",
-  "main": "index.js",
+  "type": "module",
+  "main": "app.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
