@@ -1,4 +1,5 @@
 import mysql from 'mysql2';
+import bcrypt from 'bcrypt';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -12,21 +13,23 @@ const pool = mysql.createPool({
     connectionLimit: 10
 }).promise();
 
-export const getUsers = async () => {
-    const [rows] = await pool.query('SELECT * FROM users');
-    return rows;
-}
-
-export const getUser = async (id) => {
-    const [row] = await pool.query('SELECT * FROM users WHERE user_id = ?', [id]);
-
+export const logInUser = async (login, password) => {
+    const [row] = await pool.query('SELECT * FROM users WHERE username = ?', [login]);
     if (row.length == 0) {
-        return 'There is no user with this id.'
+        return 'There is no user with this username!';
     }
-    return row;
+    if (bcrypt.compareSync(password, row[0].pass)) {
+        return 'Logged in succesfully.';
+    } else {
+        return 'Wrong password!';
+    }
 }
 
-export const addUser = async(username, password) => {
-    const [result] = await pool.query('INSERT INTO users (username, pass) VALUES (?, ?)', [username, password]);
-    return result.insertId; 
+export const signInUser = async (login, password) => {
+    const [row] = await pool.query('SELECT * FROM users WHERE username = ?', [login]);
+    if (row.length != 0) {
+        return 'This username is already taken!';
+    }
+    const [result] = await pool.query('INSERT INTO users (username, pass) VALUES (?, ?)', [login, password]);
+    return 'Succesfully signed in.'
 }

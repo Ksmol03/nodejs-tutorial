@@ -1,29 +1,29 @@
 import express from 'express';
-import { getUser, getUsers, addUser } from './database.js';
+import { logInUser, signInUser } from './database.js';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-app.get('/users', async (req, res) => {
+app.use(express.json());
+
+app.get('/login', async (req, res) => {
+    const {username, password} = req.body;
+
     try {
-        const users = await getUsers();
-        res.send(users);
+        const result = await logInUser(username, password);
+        res.send(result);
     } catch (error) {
         console.log('Error: ', error);
         res.status(500).json({message: 'Internal server error'});
     }
 })
 
-app.get('/users/:id', async (req, res) => {
-    const id = req.params.id;
+app.post('/signin', async (req, res) => {
+    const {username, password} = req.body;
 
     try {
-        const users = await getUser(id);
-        if (users == 'There is no user with this id.') {
-            res.status(404).json({message: 'There is no user with this id.'});
-            return;
-        }
-        res.send(users);
+        const result = await signInUser(username, password);
+        res.send(result);
     } catch (error) {
         console.log('Error: ', error);
         res.status(500).json({message: 'Internal server error'});
