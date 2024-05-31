@@ -8,14 +8,15 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 
-app.get('/login', async (req, res) => {
+//Authenticate a user
+app.get('/authUser', async (req, res) => {
     const {username, password} = req.body;
 
     //Gets results from database.js and turns them into http responses with corresponding statuses
     try {
         const result = await authenticateUser(username, password);
         if ( result == 'Invalid username or password!') {
-            res.status(401).json({message: result});
+            res.status(result.statusCode).json({message: result.message});
             return;
         }
 
@@ -26,7 +27,7 @@ app.get('/login', async (req, res) => {
         // const insertionQuery = 'INSERT INTO sessions (session_id, user_id) VALUES (?, ?)'
         // await queryDatabase()
 
-        res.json({message: result});
+        res.status(result.statusCode).json({message: result.message, sessionId: result.sessionId});
     } catch (error) {
         console.log('Error: ', error);
         res.status(500).json({message: 'Internal server error'});

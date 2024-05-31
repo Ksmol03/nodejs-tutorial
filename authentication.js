@@ -8,7 +8,7 @@ export const authenticateUser = async (username, password) => {
     //Find user by username
     const users = await queryDatabase('SELECT * FROM users WHERE username = ?', [username]);
     if (users.length == 0) {
-        return 'Invalid username or password!';
+        return { statusCode: 200, message: 'Invalid username or password!' };
     }
 
     const user = users[0];
@@ -18,11 +18,11 @@ export const authenticateUser = async (username, password) => {
         //Create session ID
         const sessionId = crypto.randomBytes(16).toString('hex');
         const insertSessionQuery = 'INSERT INTO sessions (session_id, user_id) VALUES (?, ?)';
-        await queryDatabase(insertSessionQuery, [sessionId, user.id]);
+        await queryDatabase(insertSessionQuery, [sessionId, user.user_id]);
 
         return { statusCode: 200, message: 'User authenticated successfully.', sessionId };
     } else {
-        return 'Invalid username or password!';
+        return { statusCode: 200, message: 'Invalid username or password!' };
     }
 }
 
