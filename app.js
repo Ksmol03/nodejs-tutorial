@@ -1,5 +1,6 @@
 import express from 'express';
-import { queryDatabase, logInUser, signInUser } from './database.js';
+import { queryDatabase } from './database.js';
+import { authenticateUser, createUser } from './authentication.js';
 import crypto from 'crypto';
 
 const app = express();
@@ -12,7 +13,7 @@ app.get('/login', async (req, res) => {
 
     //Gets results from database.js and turns them into http responses with corresponding statuses
     try {
-        const result = await logInUser(username, password);
+        const result = await authenticateUser(username, password);
         if ( result == 'Invalid username or password!') {
             res.status(401).json({message: result});
             return;
@@ -22,7 +23,8 @@ app.get('/login', async (req, res) => {
         const user = result[0];
         const sessionId = crypto.randomBytes(16).toString('hex');
 
-        await 
+        // const insertionQuery = 'INSERT INTO sessions (session_id, user_id) VALUES (?, ?)'
+        // await queryDatabase()
 
         res.json({message: result});
     } catch (error) {
@@ -36,7 +38,7 @@ app.post('/signin', async (req, res) => {
 
     //Gets results from database.js and turns them into http responses with corresponding statuses
     try {
-        const result = await signInUser(username, password);
+        const result = await createUser(username, password);
         if (result == 'This username is already taken!') {
             res.status(409).json({message: result});
             return;
