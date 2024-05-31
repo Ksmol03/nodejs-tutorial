@@ -2,13 +2,13 @@ import { queryDatabase } from "./database.js";
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
-// Get username and password and gives describing message result
+// Authenticate user based on username and password with describing feedback
 export const authenticateUser = async (username, password) => {
 
     //Find user by username
     const users = await queryDatabase('SELECT * FROM users WHERE username = ?', [username]);
     if (users.length == 0) {
-        return { statusCode: 200, message: 'Invalid username or password!' };
+        return { statusCode: 401, message: 'Invalid username or password!' };
     }
 
     const user = users[0];
@@ -22,28 +22,20 @@ export const authenticateUser = async (username, password) => {
 
         return { statusCode: 200, message: 'User authenticated successfully.', sessionId };
     } else {
-        return { statusCode: 200, message: 'Invalid username or password!' };
+        return { statusCode: 401, message: 'Invalid username or password!' };
     }
 }
 
-export const authorizeUser = async (req) => {
-    try {
-
-    } catch (error) {
-        throw new Error('Internal server error.');
-    }
-}
-
-// Get username and password and gives describing message result
-export const createUser = async (username, password) => {
+// Add user to database and send information back
+export const addUser = async (username, password) => {
 
     //Checks if username is already taken
     const users = await queryDatabase('SELECT * FROM users WHERE username = ?', [username]);
     if (users.length != 0) {
-        return 'This username is already taken!';
+        return { statusCode: 409, message: 'This username is already taken!' };
     }
 
     //Add user to database
-    const [result] = await queryDatabase('INSERT INTO users (username, pass) VALUES (?, ?)', [username, password]);
-    return 'Succesfully signed in.'
+    const result = await queryDatabase('INSERT INTO users (username, pass) VALUES (?, ?)', [username, password]);
+    return { statusCode: 200, message: 'Succesfully signed in.' };
 }
