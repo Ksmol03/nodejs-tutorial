@@ -13,23 +13,30 @@ const pool = mysql.createPool({
     connectionLimit: 10
 }).promise();
 
+export const queryDatabase = async (query, params) => {
+    const [results] = await pool.execute(query, params);
+    return results;
+  };
+
+// Get login and password and gives describing message result
 export const logInUser = async (login, password) => {
-    const [row] = await pool.query('SELECT * FROM users WHERE username = ?', [login]);
-    if (row.length == 0) {
-        return 'There is no user with this username!';
+    const user = await queryDatabase('SELECT * FROM users WHERE username = ?', [login]);
+    if (user.length == 0) {
+        return 'Invalid username or password!';
     }
-    if (bcrypt.compareSync(password, row[0].pass)) {
+    if (bcrypt.compareSync(password, user[0].pass)) {
         return 'Logged in succesfully.';
     } else {
-        return 'Wrong password!';
+        return 'Invalid username or password!';
     }
 }
 
+// Get login and password and gives describing message result
 export const signInUser = async (login, password) => {
-    const [row] = await pool.query('SELECT * FROM users WHERE username = ?', [login]);
-    if (row.length != 0) {
+    const users = await queryDatabase('SELECT * FROM users WHERE username = ?', [login]);
+    if (users.length != 0) {
         return 'This username is already taken!';
     }
-    const [result] = await pool.query('INSERT INTO users (username, pass) VALUES (?, ?)', [login, password]);
+    const [result] = await queryDatabase('INSERT INTO users (username, pass) VALUES (?, ?)', [login, password]);
     return 'Succesfully signed in.'
 }
