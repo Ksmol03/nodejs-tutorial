@@ -11,7 +11,14 @@ app.get('/login', async (req, res) => {
 
     try {
         const result = await logInUser(username, password);
-        res.send(result);
+        if (result == 'There is no user with this username!') {
+            res.status(404).json({message: result});
+            return;
+        } else if ( result == 'Wrong password!') {
+            res.status(401).json({message: result});
+            return;
+        }
+        res.json({message: result});
     } catch (error) {
         console.log('Error: ', error);
         res.status(500).json({message: 'Internal server error'});
@@ -23,7 +30,11 @@ app.post('/signin', async (req, res) => {
 
     try {
         const result = await signInUser(username, password);
-        res.send(result);
+        if (result == 'This username is already taken!') {
+            res.status(409).json({message: result});
+            return;
+        }
+        res.json({message: result});
     } catch (error) {
         console.log('Error: ', error);
         res.status(500).json({message: 'Internal server error'});
