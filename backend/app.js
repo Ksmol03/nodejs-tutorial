@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 //Authenticate a user
-app.get('/authenticateUser', async (req, res) => {
+app.post('/authenticateUser', async (req, res) => {
     const {username, password} = req.body;
 
     //Gets results from database.js and turns them into http responses with corresponding statuses
@@ -37,6 +37,7 @@ app.get('/authenticateUser', async (req, res) => {
 app.get('/authorizeUser', async (req, res) => {
     try {
         const result = await authorizeUser(req);
+        console.log('tried');
 
         res.status(result.statusCode).json({message: result.message, userId: result.sessionId});
     } catch (error) {
@@ -45,14 +46,16 @@ app.get('/authorizeUser', async (req, res) => {
     }
 });
 
+//Close session
 app.delete('/closeSession', async (req, res) => {
     try {
         const result = await authorizeUser(req);
 
+        //Remove session from database
         if (result.statusCode == 200) {
             const closingSessionQuery = 'DELETE FROM sessions WHERE session_id = ?';
             await queryDatabase(closingSessionQuery, [req.cookies.sessionId]);
-            
+
             return res.status(result.statusCode).json({message: 'Session closed.'});
         }
 
