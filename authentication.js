@@ -39,3 +39,25 @@ export const addUser = async (username, password) => {
     const result = await queryDatabase('INSERT INTO users (username, pass) VALUES (?, ?)', [username, password]);
     return { statusCode: 200, message: 'Succesfully signed in.' };
 }
+
+export const authorizeUser = async (req) => {
+    try {
+        const sessionId = req.cookies.sessionId;
+
+        if (!sessionId) {
+            return {statusCode: 401, message: 'Unauthorized'};
+        }
+
+        const sessionQuery = 'SELECT * FROM sessions WHERE session_id = ?';
+        const sessions = await queryDatabase(sessionQuery, [sessionId]);
+
+        if (sessions.length == 0) {
+            return {statusCode: 401, message: 'Unauthorized'};
+        }
+
+        return {statusCode: 200, message: 'User authorized.', userId: sessionId[0].user_id};
+    } catch (error) {
+        console.log(error);
+        throw new Error('Internal server error.');
+    }
+}

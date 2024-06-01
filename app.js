@@ -1,19 +1,22 @@
 import express from 'express';
-import { authenticateUser, addUser } from './authentication.js';
+import { authenticateUser, addUser, authorizeUser } from './authentication.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
+app.use(cookieParser());
 
 //Authenticate a user
-app.get('/authUser', async (req, res) => {
+app.get('/authenticateUser', async (req, res) => {
     const {username, password} = req.body;
 
     //Gets results from database.js and turns them into http responses with corresponding statuses
     try {
         const result = await authenticateUser(username, password);
 
+        //Set sesiionId cookie
          if (result.statusCode === 200) {
             res.cookie('sessionId', result.sessionId, {
                 httpOnly: true,
@@ -27,7 +30,19 @@ app.get('/authUser', async (req, res) => {
         console.log('Error: ', error);
         res.status(500).json({message: 'Internal server error'});
     }
-})
+});
+
+//Authorize user based on sessionId
+app.get('/authorizeUser', async (req, res) => {
+    try {
+        const result = await authorizeUser(req);
+
+        res.status(result.statusCode).json({message: result.message, userId: result.sessionId});
+    } catch (error) {
+        console.log('Error: ', error);
+        res.status(500).json({message: 'Internal server error'});
+    }
+});
 
 //Add new user to database
 app.post('/addUser', async (req, res) => {
@@ -42,8 +57,8 @@ app.post('/addUser', async (req, res) => {
         console.log('Error: ', error);
         res.status(500).json({message: 'Internal server error'});
     }
-})
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
-})
+});
