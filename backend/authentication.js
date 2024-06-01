@@ -40,6 +40,7 @@ export const addUser = async (username, password) => {
     return { statusCode: 200, message: 'Succesfully signed in.' };
 }
 
+//Authorize user by sessionId
 export const authorizeUser = async (req) => {
     try {
         const sessionId = req.cookies.sessionId;
@@ -48,6 +49,7 @@ export const authorizeUser = async (req) => {
             return {statusCode: 401, message: 'Unauthorized'};
         }
 
+        //Search for sessionId in database
         const sessionQuery = 'SELECT * FROM sessions WHERE session_id = ?';
         const sessions = await queryDatabase(sessionQuery, [sessionId]);
 

@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticateUser, addUser, authorizeUser } from './authentication.js';
 import cookieParser from 'cookie-parser';
+import { queryDatabase } from './database.js';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -43,6 +44,24 @@ app.get('/authorizeUser', async (req, res) => {
         res.status(500).json({message: 'Internal server error'});
     }
 });
+
+app.delete('/closeSession', async (req, res) => {
+    try {
+        const result = await authorizeUser(req);
+
+        if (result.statusCode == 200) {
+            const closingSessionQuery = 'DELETE FROM sessions WHERE session_id = ?';
+            await queryDatabase(closingSessionQuery, [req.cookies.sessionId]);
+            
+            return res.status(result.statusCode).json({message: 'Session closed.'});
+        }
+
+        res.status(result.statusCode).json({message: result.message});
+    } catch (error) {
+        console.log('Error: ', error);
+        res.status(500).json({message: 'Internal server error'});
+    }
+})
 
 //Add new user to database
 app.post('/addUser', async (req, res) => {
